@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 130" width="100%" height="100%">
+  <defs>
+    <style>
+      .upb-bold { font-family: 'Outfit', sans-serif; font-weight: 900; fill: #ffffff; letter-spacing: 2px; }
+      .years-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; fill: #08a9dd; letter-spacing: 2px; font-size: 16px; }
+      .inst-text { font-family: 'Inter', sans-serif; font-weight: 500; fill: #d1d5db; letter-spacing: 1px; font-size: 13px; }
+      .line-accent { stroke: #08a9dd; stroke-width: 2; }
+    </style>
+  </defs>
+  <!-- 90 Emblem Line Art -->
+  <g transform="translate(15, 25)">
+    <circle cx="35" cy="35" r="30" fill="none" stroke="#08a9dd" stroke-width="3" />
+    <circle cx="75" cy="45" r="24" fill="none" stroke="#e96daa" stroke-width="3" />
+    <path d="M 55 10 L 95 70" stroke="#f7f7f4" stroke-width="2.5" stroke-linecap="round" />
+  </g>
+  <!-- 90 Años Label -->
+  <text x="130" y="55" class="years-text">90 AÑOS · 1936-2026</text>
+  <line x1="130" y1="65" x2="310" y2="65" class="line-accent" />
+  <!-- UPB Main Brand -->
+  <g transform="translate(330, 25)">
+    <rect x="0" y="0" width="140" height="70" rx="4" fill="#0c1626" stroke="#08a9dd" stroke-width="1.5" />
+    <text x="70" y="48" text-anchor="middle" class="upb-bold" font-size="40">UPB</text>
+  </g>
+</svg>

@@ -1,13 +1,188 @@
 <!doctype html>
 <html lang="es">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="dark" />
-    <title>U3 · Forces Instrument</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Fórum UPB | Relevo generacional</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/src/styles.css" />
   </head>
-  <body>
-    <div id="app"></div>
+  <body class="mode-generic">
+    <!-- Main Presentation Stage Shell -->
+    <main class="stage-shell" id="app" aria-label="Experiencia Fórum UPB">
+      <section class="stage" id="stage">
+        
+        <!-- Three.js 3D WebGL Canvas -->
+        <canvas id="visual-canvas" aria-hidden="true"></canvas>
+
+        <!-- Cinematic Atmospheric Overlays -->
+        <div class="grain" aria-hidden="true"></div>
+        <div class="vignette" aria-hidden="true"></div>
+        <div class="glow-orb" id="glow-orb" aria-hidden="true"></div>
+
+        <!-- Top Brand Lockup / Header (Visible in Host & Generic) -->
+        <header class="brand-lockup" id="brand-lockup" aria-label="Identidad Fórum UPB">
+          <div class="brand-logo-container">
+            <img src="/assets/logo_forum_centro_eventos.svg" alt="Fórum UPB Centro de Eventos" class="brand-logo-img" />
+          </div>
+          <div class="brand-tag">
+            <span class="brand-dot"></span>
+            <span id="brand-title">Future Leaders Forum · Fórum UPB</span>
+          </div>
+          <span class="brand-divider" aria-hidden="true"></span>
+          <div class="mode-badge" id="mode-badge">
+            <span id="mode-label">GENERIC_VIEWER</span>
+          </div>
+          <div class="clients-badge" id="clients-badge" title="Dispositivos móviles conectados">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+            <span id="clients-count">0</span>
+          </div>
+        </header>
+
+        <!-- Dynamic Content Layer (Host & Generic) -->
+        <section class="copy-layer" id="copy-layer" aria-live="polite">
+          <p class="eyebrow" id="moment-kicker">Future Leaders Forum · Fórum UPB</p>
+          <h1 class="moment-title" id="moment-title"></h1>
+          <p class="subtitle" id="moment-subtitle"></p>
+        </section>
+
+        <!-- Visual / Media Frame for image or graphics -->
+        <figure class="moment-asset" id="moment-asset" aria-hidden="true">
+          <div class="asset-overlay-gradient"></div>
+          <img id="moment-image" alt="" />
+        </figure>
+
+        <!-- QR / Closing Layer for Slide 13 -->
+        <aside class="qr-layer" id="qr-layer" aria-label="Enlaces de cierre">
+          <div class="qr-card">
+            <a class="qr-block" id="qr-memory-link" href="#" target="_blank" rel="noopener noreferrer">
+              <div class="qr-code" id="qr-memory" aria-hidden="true"></div>
+              <span class="qr-title" id="qr-memory-label">Memorias · Presentación</span>
+              <span class="qr-sub">Escanear para navegar</span>
+            </a>
+          </div>
+          <div class="qr-card">
+            <a class="qr-block" id="qr-social-link" href="https://instagram.com/centrodeeventosupb" target="_blank" rel="noopener noreferrer">
+              <div class="qr-code" id="qr-social" aria-hidden="true"></div>
+              <span class="qr-title" id="qr-social-label">@centrodeeventosupb</span>
+              <span class="qr-sub">Instagram Oficial</span>
+            </a>
+          </div>
+        </aside>
+
+        <!-- Client Mobile HUD (Visible only in LIVE_CLIENT) -->
+        <div class="client-hud" id="client-hud" aria-label="Panel móvil en tiempo real">
+          <div class="client-header">
+            <div class="client-status">
+              <span class="status-dot" id="client-status-dot"></span>
+              <span class="status-text" id="client-status-text">LIVE · Sincronizado</span>
+            </div>
+            <div class="client-counter">
+              <span id="client-moment-number">01</span> / 13
+            </div>
+          </div>
+          <div class="client-touch-hint">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8m-4-4h8"></path></svg>
+            <span>Arrastra para rotar la cámara 3D libre</span>
+          </div>
+          <button class="client-reset-cam-btn" id="client-reset-cam-btn" type="button" aria-label="Restablecer cámara">
+            Restablecer Vista 3D
+          </button>
+        </div>
+
+        <!-- Bottom Progress Indicator -->
+        <div class="progress-bar-container" id="progress-bar-container" aria-hidden="true">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- Floating Operator Controls UI (Host & Generic) -->
+        <nav class="operator-ui" id="operator-ui" aria-label="Controles de navegación">
+          <button class="icon-button" id="prev-button" type="button" aria-label="Diapositiva anterior" title="Anterior (← o Flecha Arriba)">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          
+          <div class="counter" aria-label="Diapositiva actual">
+            <span id="moment-number">01</span>
+            <span class="counter-sep">/</span>
+            <span id="moment-total">13</span>
+          </div>
+          
+          <button class="icon-button" id="next-button" type="button" aria-label="Siguiente diapositiva" title="Siguiente (Espacio, → o Clic)">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          
+          <div class="ui-divider" aria-hidden="true"></div>
+
+          <!-- Language Selector -->
+          <div class="language-switch" aria-label="Selector de idioma">
+            <button class="lang-btn is-active" type="button" data-language="es" aria-pressed="true">ES</button>
+            <button class="lang-btn" type="button" data-language="pt" aria-pressed="false">PT</button>
+          </div>
+
+          <div class="ui-divider" aria-hidden="true"></div>
+
+          <button class="icon-button" id="fullscreen-button" type="button" aria-label="Pantalla completa" title="Pantalla Completa (F)">
+            <svg class="icon-fullscreen-enter" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+            <svg class="icon-fullscreen-exit hidden" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path></svg>
+          </button>
+          
+          <button class="icon-button" id="help-button" type="button" aria-label="Ayuda de teclado y modos" title="Atajos y Modos (H)">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </button>
+        </nav>
+
+        <!-- Keyboard Shortcuts & Mode Switcher Modal -->
+        <aside class="help-panel" id="help-panel" aria-hidden="true" role="dialog" aria-label="Atajos de teclado y configuración">
+          <div class="help-panel-content">
+            <div class="help-header">
+              <h3>Configuración & Atajos</h3>
+              <button class="help-close-btn" id="help-close-btn" type="button" aria-label="Cerrar ayuda">&times;</button>
+            </div>
+
+            <!-- Mode Selector inside modal -->
+            <div class="mode-selector-section">
+              <label class="section-label">Modo de Ejecución:</label>
+              <div class="mode-buttons">
+                <button class="mode-btn" id="btn-mode-host" type="button">LIVE_HOST (Expositor)</button>
+                <button class="mode-btn" id="btn-mode-client" type="button">LIVE_CLIENT (Móvil)</button>
+                <button class="mode-btn is-active" id="btn-mode-generic" type="button">GENERIC_VIEWER</button>
+              </div>
+            </div>
+
+            <!-- QR de Conexión Rápida en el Modal -->
+            <div class="host-qr-section" id="host-qr-section">
+              <label class="section-label">📱 QR de Conexión para la Audiencia:</label>
+              <div class="host-qr-box">
+                <div class="qr-code" id="qr-host-connect"></div>
+                <div class="host-qr-info">
+                  <p class="host-qr-url" id="host-qr-url-text">http://localhost:5173/?mode=client</p>
+                  <p class="host-qr-desc">Escanear para interactuar en tiempo real</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="shortcut-list">
+              <div class="shortcut-item"><kbd>Espacio</kbd> o <kbd>→</kbd> <span>Avanzar momento</span></div>
+              <div class="shortcut-item"><kbd>←</kbd> o <kbd>Retroceso</kbd> <span>Retroceder momento</span></div>
+              <div class="shortcut-item"><kbd>F</kbd> <span>Pantalla completa</span></div>
+              <div class="shortcut-item"><kbd>H</kbd> o <kbd>?</kbd> <span>Mostrar / ocultar ayuda</span></div>
+              <div class="shortcut-item"><kbd>R</kbd> <span>Reiniciar al inicio</span></div>
+              <div class="shortcut-item"><kbd>Inicio</kbd> / <kbd>Fin</kbd> <span>Ir a la primera / última</span></div>
+            </div>
+
+            <div class="help-actions">
+              <button class="modal-action-btn" id="reset-button" type="button">Reiniciar</button>
+              <button class="modal-action-btn" id="end-button" type="button">Ir al final</button>
+            </div>
+          </div>
+        </aside>
+
+
+      </section>
+    </main>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

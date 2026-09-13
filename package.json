@@ -1,15 +1,21 @@
 {
-  "name": "forces-instrument-u3",
+  "name": "interactive-slides-deck",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve:live": "node server/liveServer.js",
+    "test:live": "node server/testLoadClients.js",
+    "test:interactions": "node server/testInteractions.js",
+    "test:full": "node server/testFullDeck.js"
   },
+
   "dependencies": {
-    "three": "0.185.1"
+    "three": "0.185.1",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "vite": "8.2.1"
