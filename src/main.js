@@ -39,6 +39,8 @@ const totalEl = document.querySelector('#moment-total');
 const clientMomentNumberEl = document.querySelector('#client-moment-number');
 const clientStatusTextEl = document.querySelector('#client-status-text');
 const clientStatusDotEl = document.querySelector('#client-status-dot');
+const clientTouchHintTextEl = document.querySelector('#client-touch-hint-text');
+const clientTouchHintEl = document.querySelector('#client-touch-hint');
 const progressBar = document.querySelector('#progress-bar');
 const prevBtn = document.querySelector('#prev-button');
 const nextBtn = document.querySelector('#next-button');
@@ -71,6 +73,17 @@ function detectInitialMode() {
   if (modeParam === 'client' || modeParam === 'live_client' || hash === '#client') {
     return APP_MODES.LIVE_CLIENT;
   }
+  if (modeParam === 'generic' || modeParam === 'generic_viewer' || hash === '#generic') {
+    return APP_MODES.GENERIC_VIEWER;
+  }
+
+  // Detección automática para dispositivos móviles en la red local
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+    (window.innerWidth <= 768 && ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)));
+  if (isMobile) {
+    return APP_MODES.LIVE_CLIENT;
+  }
+
   return APP_MODES.GENERIC_VIEWER;
 }
 
@@ -193,6 +206,32 @@ function renderSlide(index, animate = true) {
   // Notificar al gestor de simulaciones 3D
   simulationManager.setSlide(index);
 
+  // En modo cliente móvil: gestionar OrbitControls y actualizar texto contextual de interacción
+  if (stateManager.isClient()) {
+    const isInteractiveSlide = index === 4 || index === 8; // Slide 5 (trazos) o Slide 9 (puntos)
+    threeStage.setControlsEnabled(!isInteractiveSlide);
+
+    if (clientTouchHintTextEl) {
+      if (index === 4) {
+        clientTouchHintTextEl.textContent = '✏️ Dibuja hasta 3 trazos con el dedo · Doble tap para borrar';
+      } else if (index === 5) {
+        clientTouchHintTextEl.textContent = '🌱 Observa la transformación neuronal · Gira en 3D';
+      } else if (index === 6) {
+        clientTouchHintTextEl.textContent = '⚡ Red viva con actividad sináptica · Gira en 3D';
+      } else if (index === 8) {
+        clientTouchHintTextEl.textContent = '✨ Arrastra tus puntos luminosos en pantalla';
+      } else if (index === 9) {
+        clientTouchHintTextEl.textContent = '🧠 Cerebro 3D autoorganizado · Explora libremente';
+      } else {
+        clientTouchHintTextEl.textContent = '👆 Gira y haz zoom para explorar la simulación 3D';
+      }
+    }
+
+    if (clientResetCamBtn) {
+      clientResetCamBtn.classList.toggle('hidden', isInteractiveSlide);
+    }
+  }
+
   // Orbe de resplandor ambiental
   if (glowOrb && slide.colors && slide.colors[0]) {
     glowOrb.style.background = `radial-gradient(circle, ${slide.colors[0]}22 0%, ${slide.colors[1] || slide.colors[0]}11 50%, transparent 80%)`;
@@ -288,6 +327,19 @@ stateManager.subscribe((state, prevState) => {
     });
   }
 
+  if (state.serverInfo && state.serverInfo !== prevState.serverInfo) {
+    if (state.serverInfo.clientUrl) {
+      CONFIG.urls.liveClient = state.serverInfo.clientUrl;
+      CONFIG.qr.liveClientUrl = state.serverInfo.clientUrl;
+      if (hostQrUrlText) {
+        hostQrUrlText.textContent = state.serverInfo.clientUrl;
+      }
+      if (qrHostConnectEl && isHelpOpen) {
+        renderQRCodeToElement(qrHostConnectEl, state.serverInfo.clientUrl, { size: 85 });
+      }
+    }
+  }
+
   if (state.connectedClientsCount !== prevState.connectedClientsCount) {
     if (clientsCountEl) {
       clientsCountEl.textContent = String(state.connectedClientsCount);
@@ -298,6 +350,7 @@ stateManager.subscribe((state, prevState) => {
     updateModeUi(state.mode);
   }
 });
+
 
 // Eventos de botones (Solo activos en Host y Generic)
 if (nextBtn) nextBtn.addEventListener('click', nextMoment);

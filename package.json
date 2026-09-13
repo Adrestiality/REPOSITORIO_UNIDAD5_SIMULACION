@@ -8,10 +8,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "serve:live": "node server/liveServer.js",
+    "test:diag": "node server/diagnostics.js",
     "test:live": "node server/testLoadClients.js",
     "test:interactions": "node server/testInteractions.js",
     "test:full": "node server/testFullDeck.js"
   },
+
 
   "dependencies": {
     "three": "0.185.1",

@@ -58,16 +58,18 @@ export class Slide05Simulation extends BaseSimulation {
   }
 
   onPointerDown(e) {
-    if (e.target.closest('button') || e.target.closest('.help-panel')) return;
+    if (e.target.closest('button') || e.target.closest('.help-panel') || e.target.closest('.client-header')) return;
+    if (e.cancelable) e.preventDefault();
 
     const now = Date.now();
     const worldPos = this.screenToWorld(e.clientX, e.clientY);
 
     // Detección de doble tap para eliminar trazo propio
-    if (now - this.lastTapTime < 320) {
+    if (now - this.lastTapTime < 420) {
       const deleted = this.checkDoubleTapDelete(worldPos);
       if (deleted) {
         this.lastTapTime = 0;
+        this.isDrawing = false;
         return;
       }
     }
@@ -75,9 +77,10 @@ export class Slide05Simulation extends BaseSimulation {
     this.lastTapPos.set(e.clientX, e.clientY);
 
     // Contar cuántos trazos tiene este cliente actualmente
-    const myStrokes = this.stateManager.getStrokes().filter(s => s.clientId === this.syncBridge?.clientId);
+    const myClientId = this.syncBridge?.clientId;
+    const myStrokes = this.stateManager ? this.stateManager.getStrokes().filter(s => !myClientId || s.clientId === myClientId) : [];
     if (myStrokes.length >= 3) {
-      return; // Límite de 3 trazos alcanzado
+      return; // Límite estricto de 3 trazos por dispositivo
     }
 
     this.isDrawing = true;
@@ -86,17 +89,20 @@ export class Slide05Simulation extends BaseSimulation {
 
   onPointerMove(e) {
     if (!this.isDrawing || this.currentPoints.length === 0) return;
+    if (e.cancelable) e.preventDefault();
+
     const worldPos = this.screenToWorld(e.clientX, e.clientY);
     const lastPoint = this.currentPoints[this.currentPoints.length - 1];
 
-    if (worldPos.distanceTo(lastPoint) > 0.4) {
+    if (worldPos.distanceTo(lastPoint) > 0.35) {
       this.currentPoints.push(worldPos);
       this.renderTemporaryStroke(this.currentPoints);
     }
   }
 
-  onPointerUp() {
+  onPointerUp(e) {
     if (!this.isDrawing) return;
+    if (e && e.cancelable) e.preventDefault();
     this.isDrawing = false;
 
     if (this.currentPoints.length >= 2) {
@@ -122,11 +128,12 @@ export class Slide05Simulation extends BaseSimulation {
   }
 
   checkDoubleTapDelete(worldPos) {
-    const myStrokes = this.stateManager.getStrokes().filter(s => s.clientId === this.syncBridge?.clientId);
+    const myClientId = this.syncBridge?.clientId;
+    const myStrokes = this.stateManager ? this.stateManager.getStrokes().filter(s => !myClientId || s.clientId === myClientId) : [];
     for (const stroke of myStrokes) {
       for (const p of stroke.points) {
         const strokePos = new THREE.Vector3(p.x, p.y, p.z || 0);
-        if (strokePos.distanceTo(worldPos) < 2.5) {
+        if (strokePos.distanceTo(worldPos) < 3.8) {
           this.stateManager.removeStroke(stroke.id);
           if (this.syncBridge) {
             this.syncBridge.sendStrokeDelete(stroke.id);

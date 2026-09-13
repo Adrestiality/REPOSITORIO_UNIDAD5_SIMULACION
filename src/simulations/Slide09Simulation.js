@@ -220,12 +220,13 @@ export class Slide09Simulation extends BaseSimulation {
   }
 
   onPointerDown(e) {
-    if (e.target.closest('button') || e.target.closest('.help-panel')) return;
+    if (e.target.closest('button') || e.target.closest('.help-panel') || e.target.closest('.client-header')) return;
+    if (e.cancelable) e.preventDefault();
 
     const worldPos = this.screenToWorld(e.clientX, e.clientY);
     const myClientId = this.syncBridge?.clientId;
 
-    let nearestDist = 3.5; // Radio de captura cómodo en táctil
+    let nearestDist = 4.5; // Radio de captura generoso y ergonómico en pantallas táctiles
     let nearestId = null;
 
     for (const [id, p] of this.pointsData.entries()) {
@@ -250,14 +251,15 @@ export class Slide09Simulation extends BaseSimulation {
 
   onPointerMove(e) {
     if (!this.draggedPointId) return;
+    if (e.cancelable) e.preventDefault();
     const worldPos = this.screenToWorld(e.clientX, e.clientY);
     this.dragTargetPos.copy(worldPos);
 
     const p = this.pointsData.get(this.draggedPointId);
     if (p) {
       // Física de arrastre elástica
-      p.x += (this.dragTargetPos.x - p.x) * 0.45;
-      p.y += (this.dragTargetPos.y - p.y) * 0.45;
+      p.x += (this.dragTargetPos.x - p.x) * 0.55;
+      p.y += (this.dragTargetPos.y - p.y) * 0.55;
       p.baseX = p.x;
       p.baseY = p.y;
 
@@ -285,7 +287,8 @@ export class Slide09Simulation extends BaseSimulation {
     }
   }
 
-  onPointerUp() {
+  onPointerUp(e) {
+    if (e && e.cancelable) e.preventDefault();
     if (this.draggedPointId) {
       const p = this.pointsData.get(this.draggedPointId);
       if (p) {

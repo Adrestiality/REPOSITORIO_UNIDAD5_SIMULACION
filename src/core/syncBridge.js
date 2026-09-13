@@ -207,7 +207,11 @@ export class SyncBridge {
         break;
 
       case SYNC_EVENTS.HOST_STATE_SYNC:
-        if (mode === APP_MODES.LIVE_CLIENT) {
+        if (mode === APP_MODES.LIVE_HOST) {
+          if (message.payload.serverInfo) {
+            this.stateManager.setState({ serverInfo: message.payload.serverInfo });
+          }
+        } else if (mode === APP_MODES.LIVE_CLIENT) {
           if (message.payload.assignedGroup) {
             this.stateManager.setUserGroup(message.payload.assignedGroup);
           }
@@ -224,6 +228,7 @@ export class SyncBridge {
           });
         }
         break;
+
 
       case SYNC_EVENTS.CLIENT_COUNT_UPDATE:
         if (mode === APP_MODES.LIVE_HOST) {

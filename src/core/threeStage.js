@@ -78,6 +78,19 @@ export class ThreeStage {
     this.controls.autoRotate = false;
   }
 
+  setControlsEnabled(enabled) {
+    if (!this.controls) {
+      if (enabled && this.isClient) {
+        this.initClientControls();
+      }
+      return;
+    }
+    this.controls.enabled = !!enabled;
+    if (!enabled) {
+      this.resetCamera();
+    }
+  }
+
   resetCamera() {
     this.camera.position.copy(this.defaultCameraPos);
     this.camera.lookAt(0, 0, 0);
@@ -92,6 +105,8 @@ export class ThreeStage {
     this.isClient = mode === APP_MODES.LIVE_CLIENT;
     if (this.isClient && !this.controls) {
       this.initClientControls();
+    } else if (!this.isClient && this.controls) {
+      this.controls.enabled = false;
     }
   }
 

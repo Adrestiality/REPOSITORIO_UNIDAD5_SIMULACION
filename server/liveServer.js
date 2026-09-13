@@ -45,23 +45,41 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
-  if (req.url === '/status') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+  const ips = getLocalIpAddresses();
+  const primaryIp = ips[0] || 'localhost';
+
+  if (req.url === '/status' || req.url === '/info') {
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({
       status: 'active',
+      primaryLanIp: primaryIp,
+      lanIps: ips,
+      ports: { ws: PORT, vite: VITE_PORT },
+      urls: {
+        host: `http://${primaryIp}:${VITE_PORT}/?mode=host`,
+        client: `http://${primaryIp}:${VITE_PORT}/?mode=client`,
+        generic: `http://${primaryIp}:${VITE_PORT}/?mode=generic`
+      },
       currentSlide: session.currentSlide,
       language: session.language,
       connectedClientsCount: session.connectedClients.size,
+      connectedClients: Array.from(session.connectedClients.entries()).map(([id, c]) => ({
+        clientId: id,
+        group: session.userGroups.get(id) || 'A',
+        ip: c.ip,
+        joinedAt: c.joinedAt,
+        lastSeen: c.lastSeen
+      })),
       totalStrokes: session.strokes.size,
       totalPoints: session.points.size,
       hasHost: session.hostSocket !== null && session.hostSocket.readyState === WebSocket.OPEN,
-      uptime: process.uptime()
-    }));
+      uptimeSeconds: Math.floor(process.uptime())
+    }, null, 2));
     return;
   }
 
   res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-  res.end('Fórum UPB Live Server activo.');
+  res.end(`Fórum UPB Live Server activo. LAN IP: http://${primaryIp}:${VITE_PORT}/?mode=client`);
 });
 
 const wss = new WebSocketServer({ server });
@@ -135,6 +153,28 @@ wss.on('connection', (ws, req) => {
           session.language = payload.language;
         }
         notifyHostClientCount();
+
+        const detectedIps = getLocalIpAddresses();
+        const primaryLanIp = detectedIps[0] || 'localhost';
+
+        // Enviar confirmación con metadatos del servidor al Host
+        sendTo(ws, 'HOST_STATE_SYNC', {
+          currentSlide: session.currentSlide,
+          language: session.language,
+          simulationStates: session.simulationStates,
+          strokes: Array.from(session.strokes.values()),
+          points: Array.from(session.points.values()),
+          serverInfo: {
+            primaryLanIp,
+            lanIps: detectedIps,
+            clientUrl: `http://${primaryLanIp}:${VITE_PORT}/?mode=client`,
+            hostUrl: `http://${primaryLanIp}:${VITE_PORT}/?mode=host`,
+            wsPort: PORT,
+            vitePort: VITE_PORT
+          }
+        });
+
+        // Difundir estado a los clientes
         broadcastToClients('HOST_STATE_SYNC', {
           currentSlide: session.currentSlide,
           language: session.language,
@@ -143,6 +183,7 @@ wss.on('connection', (ws, req) => {
           points: Array.from(session.points.values())
         });
         break;
+
 
       // --- CAMBIO DE SLIDE POR EL HOST ---
       case 'SLIDE_CHANGE':
@@ -303,17 +344,18 @@ const heartbeatTimer = setInterval(() => {
 
 wss.on('close', () => clearInterval(heartbeatTimer));
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   const ips = getLocalIpAddresses();
   console.log('\n===============================================================');
   console.log('⚡ FÓRUM UPB - SERVIDOR LIVE ACTIVO');
-  console.log(`📡 WebSocket escuchando en el puerto: ${PORT}`);
+  console.log(`📡 WebSocket escuchando en todas las interfaces: 0.0.0.0:${PORT}`);
   console.log('===============================================================');
   console.log('\n🌐 RUTAS:');
   console.log(`  💻 HOST:    http://localhost:${VITE_PORT}/?mode=host`);
   console.log(`  🌐 GENERIC: http://localhost:${VITE_PORT}/?mode=generic`);
   ips.forEach((ip) => {
-    console.log(`  📱 MÓVIL:   http://${ip}:${VITE_PORT}/?mode=client`);
+    console.log(`  📱 MÓVIL (Wi-Fi): http://${ip}:${VITE_PORT}/?mode=client`);
   });
   console.log('===============================================================\n');
 });
+

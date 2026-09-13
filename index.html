@@ -83,13 +83,15 @@
               <span id="client-moment-number">01</span> / 13
             </div>
           </div>
-          <div class="client-touch-hint">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8m-4-4h8"></path></svg>
-            <span>Arrastra para rotar la cámara 3D libre</span>
+          <div class="client-footer">
+            <div class="client-touch-hint" id="client-touch-hint">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v8m-4-4h8"></path></svg>
+              <span id="client-touch-hint-text">Gira y haz zoom para explorar la simulación 3D</span>
+            </div>
+            <button class="client-reset-cam-btn" id="client-reset-cam-btn" type="button" aria-label="Restablecer cámara">
+              Restablecer Vista 3D
+            </button>
           </div>
-          <button class="client-reset-cam-btn" id="client-reset-cam-btn" type="button" aria-label="Restablecer cámara">
-            Restablecer Vista 3D
-          </button>
         </div>
 
         <!-- Bottom Progress Indicator -->

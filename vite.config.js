@@ -1,10 +1,15 @@
 import { defineConfig } from 'vite';
 
-// Relative assets make the same build work locally and under
-// https://<user>.github.io/<repository>/ without hard-coding the repo name.
 export default defineConfig({
   base: './',
+  server: {
+    host: '0.0.0.0', // Escuchar en todas las interfaces de red para acceso desde celulares
+    port: 5173,
+    strictPort: true,
+    cors: true
+  },
   build: {
     target: 'es2022'
   }
 });
+
