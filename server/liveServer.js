@@ -25,6 +25,14 @@ function getLocalIpAddresses() {
   return addresses.length > 0 ? addresses : ['localhost'];
 }
 
+function getViewUrls(host) {
+  return {
+    host: `http://${host}:${VITE_PORT}/?mode=host`,
+    client: `http://${host}:${VITE_PORT}/?mode=client`,
+    generic: `http://${host}:${VITE_PORT}/?mode=generic`
+  };
+}
+
 // Estado de la sesión en memoria RAM
 const session = {
   currentSlide: 0,
@@ -49,17 +57,15 @@ const server = http.createServer((req, res) => {
   const primaryIp = ips[0] || 'localhost';
 
   if (req.url === '/status' || req.url === '/info') {
+    const primaryUrls = getViewUrls(primaryIp);
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify({
       status: 'active',
       primaryLanIp: primaryIp,
       lanIps: ips,
       ports: { ws: PORT, vite: VITE_PORT },
-      urls: {
-        host: `http://${primaryIp}:${VITE_PORT}/?mode=host`,
-        client: `http://${primaryIp}:${VITE_PORT}/?mode=client`,
-        generic: `http://${primaryIp}:${VITE_PORT}/?mode=generic`
-      },
+      urls: primaryUrls,
+      urlsByIp: Object.fromEntries(ips.map((ip) => [ip, getViewUrls(ip)])),
       currentSlide: session.currentSlide,
       language: session.language,
       connectedClientsCount: session.connectedClients.size,
@@ -351,10 +357,15 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`📡 WebSocket escuchando en todas las interfaces: 0.0.0.0:${PORT}`);
   console.log('===============================================================');
   console.log('\n🌐 RUTAS:');
-  console.log(`  💻 HOST:    http://localhost:${VITE_PORT}/?mode=host`);
-  console.log(`  🌐 GENERIC: http://localhost:${VITE_PORT}/?mode=generic`);
+  console.log(`  💻 HOST (local):    http://localhost:${VITE_PORT}/?mode=host`);
+  console.log(`  🌐 VISOR (local):   http://localhost:${VITE_PORT}/?mode=generic`);
+  console.log(`  📱 MÓVIL (local):   http://localhost:${VITE_PORT}/?mode=client`);
   ips.forEach((ip) => {
-    console.log(`  📱 MÓVIL (Wi-Fi): http://${ip}:${VITE_PORT}/?mode=client`);
+    const urls = getViewUrls(ip);
+    console.log(`\n  📡 ACCESOS LAN (${ip}):`);
+    console.log(`     💻 HOST:   ${urls.host}`);
+    console.log(`     📱 MÓVIL:  ${urls.client}`);
+    console.log(`     🌐 VISOR:  ${urls.generic}`);
   });
   console.log('===============================================================\n');
 });
