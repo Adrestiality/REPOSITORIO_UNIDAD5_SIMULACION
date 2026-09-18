@@ -367,3 +367,5 @@ export class Slide03 extends BaseSlide {
     this.group.rotation.x = 0.05 + Math.cos(t * 0.08) * 0.02;
   }
 }
+
+
