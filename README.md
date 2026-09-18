@@ -42,15 +42,16 @@ npm install
 
 ## 2. Ejecución Local
 
-Para una experiencia en vivo completa, se inician dos procesos: el **servidor WebSocket** y el **servidor web Vite**.
+Para una experiencia en vivo completa, inicia el comando integrado, que levanta el **servidor WebSocket** y el **servidor web Vite**:
 
 ```bash
-# Terminal 1: Iniciar el servidor LIVE en tiempo real (WebSocket en puerto 3000)
-npm run serve:live
-
-# Terminal 2: Iniciar el servidor web (Vite en puerto 5173 accesible en red local)
+# Inicia WebSocket en 3000 y Vite en 5173
 npm run dev
 ```
+
+También puedes ejecutar `npm run serve:live` por separado si Vite ya está iniciado.
+
+Para acceso desde otro dispositivo mediante port forwarding, publica únicamente el puerto `5173`. Vite sirve la interfaz y reenvía `/ws` al servidor LIVE interno en `3000`; ambos procesos deben estar ejecutándose. Si el forwarding usa HTTPS, la conexión WebSocket cambia automáticamente a `wss`.
 
 ---
 

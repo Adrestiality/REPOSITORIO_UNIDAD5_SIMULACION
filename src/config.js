@@ -1,12 +1,11 @@
 /**
  * Configuración Global - Fórum UPB
- * Centraliza la arquitectura de enlaces, generación de QR, marca y catálogo de activos.
+ * Metadatos de marca, activos y enlaces oficiales de la presentación.
  */
 
-// Función auxiliar para determinar la URL base dinámica del entorno
 function getBaseUrl() {
   if (typeof window !== 'undefined' && window.location) {
-    return `${window.location.protocol}//${window.location.host}`;
+    return `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
   }
   return 'http://localhost:5173';
 }
@@ -17,42 +16,26 @@ export const CONFIG = {
   defaultLanguage: "es",
   aspectRatio: 16 / 9,
 
-  // --- ARQUITECTURA DE ENLACES ---
   urls: {
-    // 1. Enlace para el Expositor
-    liveHost: `${getBaseUrl()}/?mode=host`,
-    // 2. Enlace para Celulares Participantes (QR Participación)
-    liveClient: `${getBaseUrl()}/?mode=client`,
-    // 3. Enlace para Visualización Genérica / Memorias (QR Cierre)
-    genericViewer: `${getBaseUrl()}/?mode=generic`,
-    // 4. Enlace Institucional de Instagram
+    presentation: getBaseUrl(),
     instagram: "https://instagram.com/centrodeeventosupb"
   },
 
-  // --- CONFIGURACIÓN DE CÓDIGOS QR ---
   qr: {
-    // QR de Conexión en Vivo para asistentes (Slides iniciales / Modal Host)
-    liveClientUrl: `${getBaseUrl()}/?mode=client`,
-    // QR de Memorias / Presentación Genérica (Slide 13)
-    memoryUrl: `${getBaseUrl()}/?mode=generic`,
-    // QR de Redes Sociales (Slide 13)
+    memoryUrl: getBaseUrl(),
     socialUrl: "https://instagram.com/centrodeeventosupb",
-
     labels: {
       es: {
         memory: "Memorias · Presentación",
-        social: "@centrodeeventosupb",
-        liveConnect: "Escanear para interactuar con tu celular"
+        social: "@centrodeeventosupb"
       },
       pt: {
         memory: "Memórias · Apresentação",
-        social: "@centrodeeventosupb",
-        liveConnect: "Escanear para interagir com seu celular"
+        social: "@centrodeeventosupb"
       }
     }
   },
 
-  // --- CATÁLOGO DE IMÁGENES Y LOGOS ---
   assets: {
     logos: {
       forumCentroEventos: "./assets/logo_forum_centro_eventos.svg",
@@ -68,4 +51,3 @@ export const CONFIG = {
     }
   }
 };
-

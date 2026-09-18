@@ -1,46 +1,25 @@
 /**
  * Main Presentation Engine Controller - Fórum UPB
- * Maneja modos (LIVE_HOST, LIVE_CLIENT, GENERIC_VIEWER),
- * sincronización en tiempo real, 3D WebGL ThreeStage y las 13 simulaciones modulares.
+ * Única Presentación Web: Controla la navegación 3D Three.js,
+ * la interfaz cinematográfica, atajos de teclado y selección de idioma.
  */
 import { CONFIG } from './config.js';
-import { SLIDES } from './slides.js';
-import { StateManager, APP_MODES } from './core/stateManager.js';
-import { SyncBridge } from './core/syncBridge.js';
-import { ThreeStage } from './core/threeStage.js';
-import { SimulationManager } from './simulations/simulationRegistry.js';
-import { renderQRCodeToElement } from './core/qrGenerator.js';
+import { ThreeStage } from './core/ThreeStage.js';
+import { SlideManager } from './core/SlideManager.js';
 
 // DOM Elements
-const bodyEl = document.body;
 const canvas = document.querySelector('#visual-canvas');
+const stageShell = document.querySelector('#app');
 const stage = document.querySelector('#stage');
 const copyLayer = document.querySelector('#copy-layer');
 const kickerEl = document.querySelector('#moment-kicker');
 const titleEl = document.querySelector('#moment-title');
 const subtitleEl = document.querySelector('#moment-subtitle');
-const assetFrame = document.querySelector('#moment-asset');
-const assetImage = document.querySelector('#moment-image');
 const glowOrb = document.querySelector('#glow-orb');
-const qrLayer = document.querySelector('#qr-layer');
-const qrMemoryEl = document.querySelector('#qr-memory');
-const qrSocialEl = document.querySelector('#qr-social');
-const qrMemoryLink = document.querySelector('#qr-memory-link');
-const qrSocialLink = document.querySelector('#qr-social-link');
-const qrMemoryLabel = document.querySelector('#qr-memory-label');
-const qrSocialLabel = document.querySelector('#qr-social-label');
-const qrHostConnectEl = document.querySelector('#qr-host-connect');
-const hostQrUrlText = document.querySelector('#host-qr-url-text');
 
-
-// UI Elements
+// UI Controls
 const numberEl = document.querySelector('#moment-number');
 const totalEl = document.querySelector('#moment-total');
-const clientMomentNumberEl = document.querySelector('#client-moment-number');
-const clientStatusTextEl = document.querySelector('#client-status-text');
-const clientStatusDotEl = document.querySelector('#client-status-dot');
-const clientTouchHintTextEl = document.querySelector('#client-touch-hint-text');
-const clientTouchHintEl = document.querySelector('#client-touch-hint');
 const progressBar = document.querySelector('#progress-bar');
 const prevBtn = document.querySelector('#prev-button');
 const nextBtn = document.querySelector('#next-button');
@@ -51,95 +30,18 @@ const helpCloseBtn = document.querySelector('#help-close-btn');
 const resetBtn = document.querySelector('#reset-button');
 const endBtn = document.querySelector('#end-button');
 const brandTitleEl = document.querySelector('#brand-title');
-const modeLabelEl = document.querySelector('#mode-label');
-const clientsCountEl = document.querySelector('#clients-count');
-const clientResetCamBtn = document.querySelector('#client-reset-cam-btn');
 const langButtons = [...document.querySelectorAll('[data-language]')];
 
-// Mode Selection Buttons
-const btnModeHost = document.querySelector('#btn-mode-host');
-const btnModeClient = document.querySelector('#btn-mode-client');
-const btnModeGeneric = document.querySelector('#btn-mode-generic');
+// Inicializar ThreeStage y SlideManager
+const threeStage = new ThreeStage(canvas);
+const slideManager = new SlideManager(threeStage);
 
-// --- DETECCIÓN DE MODO INICIAL ---
-function detectInitialMode() {
-  const params = new URLSearchParams(window.location.search);
-  const hash = window.location.hash.toLowerCase();
-  const modeParam = (params.get('mode') || '').toLowerCase();
-
-  if (modeParam === 'host' || modeParam === 'live_host' || hash === '#host') {
-    return APP_MODES.LIVE_HOST;
-  }
-  if (modeParam === 'client' || modeParam === 'live_client' || hash === '#client') {
-    return APP_MODES.LIVE_CLIENT;
-  }
-  if (modeParam === 'generic' || modeParam === 'generic_viewer' || hash === '#generic') {
-    return APP_MODES.GENERIC_VIEWER;
-  }
-
-  // Detección automática para dispositivos móviles en la red local
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-    (window.innerWidth <= 768 && ('ontouchstart' in window || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0)));
-  if (isMobile) {
-    return APP_MODES.LIVE_CLIENT;
-  }
-
-  return APP_MODES.GENERIC_VIEWER;
-}
-
-const initialMode = detectInitialMode();
-const stateManager = new StateManager(initialMode);
-const syncBridge = new SyncBridge(stateManager);
-const threeStage = new ThreeStage(canvas, { mode: initialMode });
-const simulationManager = new SimulationManager(threeStage, stateManager);
-
+// Iniciar bucle de animación 3D
 threeStage.start();
-syncBridge.init();
 
-// Escuchar estado de conexión de red
-syncBridge.onStatusChange((status) => {
-  if (clientStatusTextEl && clientStatusDotEl) {
-    if (status === 'connected') {
-      clientStatusTextEl.textContent = 'LIVE · Sincronizado';
-      clientStatusDotEl.style.backgroundColor = 'var(--accent-emerald)';
-      clientStatusDotEl.style.boxShadow = '0 0 10px var(--accent-emerald)';
-    } else if (status === 'reconnecting') {
-      clientStatusTextEl.textContent = 'Reconectando con el Host...';
-      clientStatusDotEl.style.backgroundColor = 'var(--accent-amber)';
-      clientStatusDotEl.style.boxShadow = '0 0 10px var(--accent-amber)';
-    }
-  }
-});
-
-// Actualizar clases de modo en body y controles
-function updateModeUi(mode) {
-  bodyEl.classList.remove('mode-host', 'mode-client', 'mode-generic');
-  if (mode === APP_MODES.LIVE_HOST) {
-    bodyEl.classList.add('mode-host');
-    if (modeLabelEl) modeLabelEl.textContent = 'LIVE_HOST';
-  } else if (mode === APP_MODES.LIVE_CLIENT) {
-    bodyEl.classList.add('mode-client');
-    if (modeLabelEl) modeLabelEl.textContent = 'LIVE_CLIENT';
-  } else {
-    bodyEl.classList.add('mode-generic');
-    if (modeLabelEl) modeLabelEl.textContent = 'GENERIC_VIEWER';
-  }
-
-  [btnModeHost, btnModeClient, btnModeGeneric].forEach((btn) => {
-    if (btn) btn.classList.remove('is-active');
-  });
-  if (mode === APP_MODES.LIVE_HOST && btnModeHost) btnModeHost.classList.add('is-active');
-  if (mode === APP_MODES.LIVE_CLIENT && btnModeClient) btnModeClient.classList.add('is-active');
-  if (mode === APP_MODES.GENERIC_VIEWER && btnModeGeneric) btnModeGeneric.classList.add('is-active');
-
-  threeStage.setMode(mode);
-}
-
-updateModeUi(initialMode);
-
-// Actualizar Branding
+// Configurar branding inicial
 if (brandTitleEl) brandTitleEl.textContent = CONFIG.brandLine;
-if (totalEl) totalEl.textContent = String(SLIDES.length).padStart(2, '0');
+if (totalEl) totalEl.textContent = String(slideManager.getTotalSlides()).padStart(2, '0');
 
 /**
  * Resalta las palabras clave exactas en el texto del título
@@ -182,102 +84,70 @@ function appendHighlightedText(parent, text, highlights = [], lang = 'es') {
 }
 
 /**
- * Renderiza el contenido de la diapositiva actual
+ * Renderiza la interfaz de usuario para la diapositiva actual
  */
-function renderSlide(index, animate = true) {
-  if (index < 0 || index >= SLIDES.length) return;
-  const slide = SLIDES[index];
-  const lang = stateManager.getLanguage();
+function renderSlideUi(index, lang, slide, animate = true) {
+  if (!slide) return;
+
   const copy = slide.copy[lang] || slide.copy.es;
   const highlights = slide.highlights?.[lang] || slide.highlights?.es || [];
+  const theme = slide.theme || 'light';
+  const layout = slide.layout || 'layout-left';
 
-  // Actualizar contadores
+  // Aplicar tema dinámico (Light / Dark)
+  if (stageShell) {
+    stageShell.classList.toggle('theme-light', theme === 'light');
+    stageShell.classList.toggle('theme-dark', theme === 'dark');
+  }
+  if (stage) {
+    stage.classList.toggle('theme-light', theme === 'light');
+    stage.classList.toggle('theme-dark', theme === 'dark');
+  }
+
+  // Actualizar contador y barra de progreso
   const numStr = String(index + 1).padStart(2, '0');
   if (numberEl) numberEl.textContent = numStr;
-  if (clientMomentNumberEl) clientMomentNumberEl.textContent = numStr;
-  if (totalEl) totalEl.textContent = String(SLIDES.length).padStart(2, '0');
+  if (totalEl) totalEl.textContent = String(slideManager.getTotalSlides()).padStart(2, '0');
 
-  // Actualizar barra de progreso (Host y Generic)
   if (progressBar) {
-    const progress = ((index + 1) / SLIDES.length) * 100;
+    const progress = ((index + 1) / slideManager.getTotalSlides()) * 100;
     progressBar.style.width = `${progress}%`;
   }
 
-  // Notificar al gestor de simulaciones 3D
-  simulationManager.setSlide(index);
+  // Actualizar hash de la URL limpiamente sin recargar
+  window.history.replaceState(null, '', `#${index + 1}`);
 
-  // En modo cliente móvil: gestionar OrbitControls y actualizar texto contextual de interacción
-  if (stateManager.isClient()) {
-    const isInteractiveSlide = index === 4 || index === 8; // Slide 5 (trazos) o Slide 9 (puntos)
-    threeStage.setControlsEnabled(!isInteractiveSlide);
-
-    if (clientTouchHintTextEl) {
-      if (index === 4) {
-        clientTouchHintTextEl.textContent = '✏️ Dibuja hasta 3 trazos con el dedo · Doble tap para borrar';
-      } else if (index === 5) {
-        clientTouchHintTextEl.textContent = '🌱 Observa la transformación neuronal · Gira en 3D';
-      } else if (index === 6) {
-        clientTouchHintTextEl.textContent = '⚡ Red viva con actividad sináptica · Gira en 3D';
-      } else if (index === 8) {
-        clientTouchHintTextEl.textContent = '✨ Arrastra tus puntos luminosos en pantalla';
-      } else if (index === 9) {
-        clientTouchHintTextEl.textContent = '🧠 Cerebro 3D autoorganizado · Explora libremente';
-      } else {
-        clientTouchHintTextEl.textContent = '👆 Gira y haz zoom para explorar la simulación 3D';
-      }
-    }
-
-    if (clientResetCamBtn) {
-      clientResetCamBtn.classList.toggle('hidden', isInteractiveSlide);
-    }
-  }
-
-  // Orbe de resplandor ambiental
+  // Resplandor ambiental de color
   if (glowOrb && slide.colors && slide.colors[0]) {
-    glowOrb.style.background = `radial-gradient(circle, ${slide.colors[0]}22 0%, ${slide.colors[1] || slide.colors[0]}11 50%, transparent 80%)`;
-  }
-
-  // QR Layer para slide 13
-  if (qrLayer) {
-    const isQrSlide = slide.state === 'qr';
-    qrLayer.classList.toggle('active', isQrSlide);
-    if (isQrSlide) {
-      if (qrMemoryEl) renderQRCodeToElement(qrMemoryEl, CONFIG.qr.memoryUrl, { size: 110 });
-      if (qrSocialEl) renderQRCodeToElement(qrSocialEl, CONFIG.qr.socialUrl, { size: 110 });
-      if (qrMemoryLink) qrMemoryLink.href = CONFIG.qr.memoryUrl;
-      if (qrSocialLink) qrSocialLink.href = CONFIG.qr.socialUrl;
-      if (qrMemoryLabel) qrMemoryLabel.textContent = CONFIG.qr.labels[lang]?.memory || "Memorias · Presentación";
-      if (qrSocialLabel) qrSocialLabel.textContent = CONFIG.qr.labels[lang]?.social || "@centrodeeventosupb";
-    }
+    const opacityHex = theme === 'dark' ? '22' : '15';
+    glowOrb.style.background = `radial-gradient(circle, ${slide.colors[0]}${opacityHex} 0%, ${slide.colors[1] || slide.colors[0]}08 50%, transparent 80%)`;
   }
 
   const updateTexts = () => {
+    if (copyLayer) {
+      copyLayer.className = `copy-layer ${layout}`;
+    }
+
     if (kickerEl) {
       kickerEl.textContent = copy.kicker || CONFIG.brandLine;
     }
 
     if (titleEl) {
-      titleEl.replaceChildren();
-      appendHighlightedText(titleEl, copy.title || '', highlights, lang);
+      if (copy.titleHtml) {
+        titleEl.innerHTML = copy.titleHtml;
+      } else {
+        titleEl.replaceChildren();
+        appendHighlightedText(titleEl, copy.title || '', highlights, lang);
+      }
     }
 
     if (subtitleEl) {
       subtitleEl.textContent = copy.subtitle || '';
       subtitleEl.style.display = copy.subtitle ? 'block' : 'none';
     }
-
-    if (assetFrame && assetImage) {
-      if (slide.asset && slide.asset.src) {
-        assetImage.src = slide.asset.src;
-        assetImage.alt = slide.asset.alt || '';
-        assetFrame.classList.add('active');
-      } else {
-        assetFrame.classList.remove('active');
-      }
-    }
   };
 
-  if (!animate) {
+  if (!animate || !copyLayer) {
     updateTexts();
     return;
   }
@@ -292,75 +162,30 @@ function renderSlide(index, animate = true) {
   }, 140);
 }
 
+// Suscripción al SlideManager para actualizar UI al cambiar de slide o idioma
+slideManager.subscribe((index, lang, slideData) => {
+  renderSlideUi(index, lang, slideData, true);
 
-/**
- * Navegación (Solo permitida para Host o Generic)
- */
-function nextMoment() {
-  if (stateManager.isClient()) return; // Clientes no navegan
-  const current = stateManager.getCurrentSlide();
-  if (current < SLIDES.length - 1) {
-    stateManager.setSlide(current + 1);
-  }
-}
-
-function prevMoment() {
-  if (stateManager.isClient()) return; // Clientes no navegan
-  const current = stateManager.getCurrentSlide();
-  if (current > 0) {
-    stateManager.setSlide(current - 1);
-  }
-}
-
-// Suscripción al StateManager para cambios reactivos
-stateManager.subscribe((state, prevState) => {
-  if (state.currentSlide !== prevState.currentSlide || state.language !== prevState.language) {
-    renderSlide(state.currentSlide, true);
-  }
-
-  if (state.language !== prevState.language) {
-    document.documentElement.lang = state.language;
-    langButtons.forEach((btn) => {
-      const isActive = btn.dataset.language === state.language;
-      btn.classList.toggle('is-active', isActive);
-      btn.setAttribute('aria-pressed', String(isActive));
-    });
-  }
-
-  if (state.serverInfo && state.serverInfo !== prevState.serverInfo) {
-    if (state.serverInfo.clientUrl) {
-      CONFIG.urls.liveClient = state.serverInfo.clientUrl;
-      CONFIG.qr.liveClientUrl = state.serverInfo.clientUrl;
-      if (hostQrUrlText) {
-        hostQrUrlText.textContent = state.serverInfo.clientUrl;
-      }
-      if (qrHostConnectEl && isHelpOpen) {
-        renderQRCodeToElement(qrHostConnectEl, state.serverInfo.clientUrl, { size: 85 });
-      }
-    }
-  }
-
-  if (state.connectedClientsCount !== prevState.connectedClientsCount) {
-    if (clientsCountEl) {
-      clientsCountEl.textContent = String(state.connectedClientsCount);
-    }
-  }
-
-  if (state.mode !== prevState.mode) {
-    updateModeUi(state.mode);
-  }
+  // Actualizar selector de idioma en la UI
+  document.documentElement.lang = lang;
+  langButtons.forEach((btn) => {
+    const isActive = btn.dataset.language === lang;
+    btn.classList.toggle('is-active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+  });
 });
 
+// Eventos de botones de navegación
+if (nextBtn) nextBtn.addEventListener('click', () => slideManager.next());
+if (prevBtn) prevBtn.addEventListener('click', () => slideManager.prev());
 
-// Eventos de botones (Solo activos en Host y Generic)
-if (nextBtn) nextBtn.addEventListener('click', nextMoment);
-if (prevBtn) prevBtn.addEventListener('click', prevMoment);
-
-if (clientResetCamBtn) {
-  clientResetCamBtn.addEventListener('click', () => {
-    threeStage.resetCamera();
+// Selector de Idioma (ES / PT)
+langButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const lang = btn.dataset.language;
+    slideManager.setLanguage(lang);
   });
-}
+});
 
 // Pantalla Completa
 async function toggleFullscreen() {
@@ -384,37 +209,25 @@ async function toggleFullscreen() {
 
 if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
 
-// Modal de Ayuda & Configuración
+// Modal de Ayuda & Atajos
 let isHelpOpen = false;
 function toggleHelp(show) {
   isHelpOpen = typeof show === 'boolean' ? show : !isHelpOpen;
   if (helpPanel) {
     helpPanel.classList.toggle('active', isHelpOpen);
     helpPanel.setAttribute('aria-hidden', String(!isHelpOpen));
-
-    if (isHelpOpen) {
-      if (qrHostConnectEl) {
-        renderQRCodeToElement(qrHostConnectEl, CONFIG.qr.liveClientUrl, { size: 85 });
-      }
-      if (hostQrUrlText) {
-        hostQrUrlText.textContent = CONFIG.qr.liveClientUrl;
-      }
-    }
   }
 }
-
 
 if (helpBtn) helpBtn.addEventListener('click', () => toggleHelp(true));
 if (helpCloseBtn) helpCloseBtn.addEventListener('click', () => toggleHelp(false));
 if (resetBtn) resetBtn.addEventListener('click', () => {
-  if (stateManager.isClient()) return;
   toggleHelp(false);
-  stateManager.setSlide(0);
+  slideManager.first();
 });
 if (endBtn) endBtn.addEventListener('click', () => {
-  if (stateManager.isClient()) return;
   toggleHelp(false);
-  stateManager.setSlide(SLIDES.length - 1);
+  slideManager.last();
 });
 
 if (helpPanel) {
@@ -423,40 +236,8 @@ if (helpPanel) {
   });
 }
 
-// Botones de Selector de Idioma (Solo expositor o modo genérico)
-langButtons.forEach((btn) => {
-  btn.addEventListener('click', () => {
-    if (stateManager.isClient()) return;
-    const lang = btn.dataset.language;
-    stateManager.setLanguage(lang);
-  });
-});
-
-// Botones de Selector de Modo
-if (btnModeHost) {
-  btnModeHost.addEventListener('click', () => {
-    stateManager.setMode(APP_MODES.LIVE_HOST);
-    syncBridge.init();
-    toggleHelp(false);
-  });
-}
-if (btnModeClient) {
-  btnModeClient.addEventListener('click', () => {
-    stateManager.setMode(APP_MODES.LIVE_CLIENT);
-    syncBridge.init();
-    toggleHelp(false);
-  });
-}
-if (btnModeGeneric) {
-  btnModeGeneric.addEventListener('click', () => {
-    stateManager.setMode(APP_MODES.GENERIC_VIEWER);
-    toggleHelp(false);
-  });
-}
-
-// Clic en la pantalla para avanzar (solo en Host / Generic)
+// Clic en la pantalla para avanzar diapositiva
 stage.addEventListener('click', (e) => {
-  if (stateManager.isClient()) return;
   if (
     e.target.closest('.operator-ui') ||
     e.target.closest('.help-panel') ||
@@ -465,10 +246,10 @@ stage.addEventListener('click', (e) => {
   ) {
     return;
   }
-  nextMoment();
+  slideManager.next();
 });
 
-// Controles de Teclado (Bloqueados para el cliente móvil)
+// Controles de Teclado
 window.addEventListener('keydown', (e) => {
   if (isHelpOpen) {
     if (e.key === 'Escape' || e.key === 'h' || e.key === 'H') {
@@ -478,23 +259,20 @@ window.addEventListener('keydown', (e) => {
     return;
   }
 
-  // En modo cliente los atajos de teclado NO navegan
-  if (stateManager.isClient()) return;
-
   switch (e.key) {
     case 'ArrowRight':
     case 'ArrowDown':
     case ' ':
     case 'PageDown':
       e.preventDefault();
-      nextMoment();
+      slideManager.next();
       break;
     case 'ArrowLeft':
     case 'ArrowUp':
     case 'Backspace':
     case 'PageUp':
       e.preventDefault();
-      prevMoment();
+      slideManager.prev();
       break;
     case 'f':
     case 'F':
@@ -510,56 +288,51 @@ window.addEventListener('keydown', (e) => {
     case 'r':
     case 'R':
       e.preventDefault();
-      stateManager.setSlide(0);
+      slideManager.first();
       break;
     case 'Home':
       e.preventDefault();
-      stateManager.setSlide(0);
+      slideManager.first();
       break;
     case 'End':
       e.preventDefault();
-      stateManager.setSlide(SLIDES.length - 1);
+      slideManager.last();
       break;
     default:
       if (e.key >= '1' && e.key <= '9') {
         const num = parseInt(e.key, 10) - 1;
-        if (num < SLIDES.length) {
-          stateManager.setSlide(num);
+        if (num < slideManager.getTotalSlides()) {
+          slideManager.goTo(num);
         }
       }
       break;
   }
 });
 
-// Soporte Touch Swipe para Host & Generic
+// Soporte Touch Swipe en dispositivos táctiles
 let touchStartX = 0;
 stage.addEventListener('touchstart', (e) => {
-  if (stateManager.isClient()) return; // En cliente los toques son para la cámara 3D
   touchStartX = e.changedTouches[0].clientX;
 }, { passive: true });
 
 stage.addEventListener('touchend', (e) => {
-  if (stateManager.isClient()) return;
   const delta = e.changedTouches[0].clientX - touchStartX;
   if (Math.abs(delta) > 42) {
-    if (delta < 0) nextMoment();
-    else prevMoment();
+    if (delta < 0) slideManager.next();
+    else slideManager.prev();
   }
 }, { passive: true });
 
-// Inicialización
+// Inicialización de la presentación al cargar
 function init() {
   const hash = window.location.hash.replace('#', '');
   const initialIndex = parseInt(hash, 10) - 1;
-  const targetIndex = !isNaN(initialIndex) && initialIndex >= 0 && initialIndex < SLIDES.length ? initialIndex : 0;
+  const targetIndex = !isNaN(initialIndex) && initialIndex >= 0 && initialIndex < slideManager.getTotalSlides()
+    ? initialIndex
+    : 0;
 
-  // En modo cliente, el slide inicial lo determina el Host a través del SyncBridge
-  if (!stateManager.isClient()) {
-    stateManager.setSlide(targetIndex);
-    renderSlide(targetIndex, false);
-  } else {
-    renderSlide(0, false);
-  }
+  slideManager.goTo(targetIndex);
+  renderSlideUi(targetIndex, slideManager.getLanguage(), slideManager.getCurrentSlideData(), false);
 }
 
 if (document.readyState === 'loading') {

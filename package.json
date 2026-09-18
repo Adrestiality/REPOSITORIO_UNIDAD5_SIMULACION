@@ -4,20 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "serve:live": "node server/liveServer.js",
-    "test:diag": "node server/diagnostics.js",
-    "test:live": "node server/testLoadClients.js",
-    "test:interactions": "node server/testInteractions.js",
-    "test:full": "node server/testFullDeck.js"
+    "preview": "vite preview"
   },
-
-
   "dependencies": {
-    "three": "0.185.1",
-    "ws": "^8.18.0"
+    "three": "0.185.1"
   },
   "devDependencies": {
     "vite": "8.2.1"

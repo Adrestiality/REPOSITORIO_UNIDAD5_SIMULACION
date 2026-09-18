@@ -1,22 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="35 -442 540 94" width="100%" height="100%">
   <defs>
     <style>
-      .upb-text { font-family: 'Outfit', 'Inter', sans-serif; font-weight: 900; fill: #ffffff; letter-spacing: 2px; }
-      .forum-text { font-family: 'Space Grotesk', 'Outfit', sans-serif; font-weight: 700; fill: #ffffff; letter-spacing: 3px; }
-      .sub-text { font-family: 'Inter', sans-serif; font-weight: 400; fill: #08a9dd; letter-spacing: 1.5px; font-size: 15px; }
-      .divider-line { stroke: #08a9dd; stroke-width: 2.5; stroke-linecap: round; }
+      .upb-mark { fill: currentColor; }
+      .upb-divider { fill: #08a9dd; }
+      .forum-head { font-family: 'Space Grotesk', 'Outfit', sans-serif; font-weight: 700; fill: currentColor; letter-spacing: 2px; }
+      .forum-sub { font-family: 'Inter', sans-serif; font-weight: 500; fill: #08a9dd; letter-spacing: 1px; }
     </style>
   </defs>
-  <!-- UPB Symbol Box -->
-  <g transform="translate(10, 20)">
-    <rect x="0" y="0" width="130" height="75" rx="6" fill="#0c1626" stroke="#08a9dd" stroke-width="1.5" />
-    <text x="65" y="52" text-anchor="middle" class="upb-text" font-size="44">UPB</text>
+  <!-- Vector UPB Mark extracted from official brand PDF -->
+  <g transform="scale(1, -1)">
+    <path class="upb-mark" d="M 269.031 359.498 C 261.320 354.494, 251.217 352.000, 238.721 352.000 L 280.588 352.000 L 280.588 379.176 C 280.588 371.058, 276.734 364.501, 269.031 359.498 M 232.526 435.965 C 244.312 435.965, 253.147 434.524, 259.037 431.639 C 264.932 428.751, 267.880 424.452, 267.880 418.722 C 267.880 415.032, 265.995 411.848, 262.218 409.168 C 258.448 406.480, 253.232 404.660, 246.585 403.697 C 257.247 402.895, 265.577 400.328, 271.587 396.017 C 277.588 391.696, 280.588 386.083, 280.588 379.176 L 280.588 435.965 Z M 240.726 425.411 C 237.377 427.227, 232.469 428.139, 225.996 428.139 L 219.889 428.139 L 219.889 406.670 L 227.421 406.670 C 233.334 406.670, 237.864 407.600, 241.021 409.452 C 244.172 411.305, 245.748 413.967, 245.748 417.435 C 245.748 420.940, 244.075 423.602, 240.726 425.411 M 256.703 379.169 C 256.703 385.463, 254.359 390.321, 249.676 393.723 C 244.991 397.133, 238.300 398.840, 229.600 398.840 L 219.889 398.840 L 219.889 359.676 L 228.261 359.676 C 237.739 359.676, 244.850 361.299, 249.592 364.549 C 254.334 367.798, 256.703 372.670, 256.703 379.169 M 145.653 435.965 C 161.677 435.965, 174.174 433.266, 183.121 427.869 C 192.070 422.472, 196.551 414.982, 196.551 405.399 L 196.551 435.965 Z M 184.262 383.411 C 176.073 377.613, 165.826 374.718, 153.517 374.718 C 150.168 374.718, 147.031 374.893, 144.122 375.254 C 141.207 375.615, 138.485 376.173, 135.961 376.935 L 135.961 352.000 L 196.551 352.000 L 196.551 405.399 C 196.551 396.531, 192.451 389.202, 184.262 383.411 M 139.006 384.370 C 141.032 382.528, 144.416 381.609, 149.136 381.609 C 156.005 381.609, 161.482 383.593, 165.574 387.564 C 169.666 391.535, 171.715 396.881, 171.715 403.623 C 171.715 411.402, 169.038 417.455, 163.690 421.787 C 158.337 426.122, 150.831 428.285, 141.177 428.285 L 135.961 428.285 L 135.961 393.756 C 135.961 389.348, 136.971 386.219, 139.006 384.370 M 87.783 354.505 C 82.862 352.840, 77.546 352.000, 71.834 352.000 L 101.536 352.000 L 101.601 362.020 C 97.314 358.683, 92.710 356.174, 87.783 354.505 M 67.093 365.858 C 70.173 363.067, 74.769 361.670, 80.882 361.670 C 87.255 361.670, 92.279 363.214, 95.946 366.302 C 99.611 369.382, 101.445 373.635, 101.445 379.066 L 101.445 435.965 L 62.473 435.965 L 62.473 378.355 C 62.473 372.813, 64.011 368.649, 67.093 365.858 M 48.093 358.515 C 53.488 354.173, 61.405 352.000, 71.834 352.000 L 39.992 352.000 L 39.992 377.644 C 39.992 369.232, 42.692 362.860, 48.093 358.515" />
+    <!-- Vertical Divider -->
+    <path class="upb-divider" d="M 319.309 352.059 L 321.0 352.059 L 321.0 435.819 L 319.309 435.819 Z" />
   </g>
-  <!-- Vertical Divider -->
-  <line x1="160" y1="20" x2="160" y2="95" class="divider-line" />
-  <!-- FÓRUM Centro de Eventos -->
-  <g transform="translate(180, 20)">
-    <text x="0" y="42" class="forum-text" font-size="34">FÓRUM</text>
-    <text x="0" y="68" class="sub-text">Centro de Eventos</text>
-  </g>
+  <!-- Text Typography Lockup Matching Official PDF -->
+  <text x="353" y="-396" transform="scale(1, -1)" class="forum-head" font-size="56">FÓRUM</text>
+  <text x="355" y="-362" transform="scale(1, -1)" class="forum-sub" font-size="18.5">Centro de Eventos</text>
 </svg>
